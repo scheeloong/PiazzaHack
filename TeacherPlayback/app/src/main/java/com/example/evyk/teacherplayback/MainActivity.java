@@ -209,6 +209,7 @@ public class MainActivity extends Activity {
         import android.os.Bundle;
         import android.app.Activity;
         import android.content.Context;
+        import android.util.Log;
         import android.view.Menu;
         import android.view.View;
         import android.widget.Button;
@@ -217,13 +218,17 @@ public class MainActivity extends Activity {
     AudioManager am = null;
     AudioRecord record =null;
     AudioTrack track =null;
-    private int BUFFER_SIZE_TRIAL = 999999;
+    private int BUFFER_SIZE_TRIAL = 9999999;
 
+    private int writeNow, writeNowHead, bla;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setVolumeControlStream(AudioManager.MODE_IN_COMMUNICATION);
+        writeNow = 0;
+        writeNowHead = 1;
+        bla = 0;
         init();
 
         // Start a new thread to run recordAndPlay() function
@@ -253,7 +258,12 @@ public class MainActivity extends Activity {
         //        AudioFormat.ENCODING_PCM_16BIT, maxJitter, AudioTrack.MODE_STREAM);
 
         track = new AudioTrack(AudioManager.MODE_IN_COMMUNICATION, 8000, AudioFormat.CHANNEL_OUT_STEREO,
-                AudioFormat.ENCODING_PCM_16BIT, maxJitter*100, AudioTrack.MODE_STREAM);
+                AudioFormat.ENCODING_PCM_16BIT, maxJitter, AudioTrack.MODE_STREAM);
+
+        // Note: Increasing maxJitter above will give you new error!!
+        // Error Is: releaseBuffer() track 0xb491b780 disabled due to previous underrun, restarting
+
+        Log.d("maxJitter*value is ", String.valueOf(maxJitter * 400));
     }
 
     private void recordAndPlay() {
@@ -266,26 +276,66 @@ public class MainActivity extends Activity {
         am = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
         // Set the Audio Mode
         am.setMode(AudioManager.MODE_IN_COMMUNICATION);
+        writeNowHead = 1;
 
         // Start recording using the Audio Recorder
         record.startRecording();
+        track.play();
+
         // Start playing using the Audio Track
         Button playBtn=(Button) findViewById(R.id.playButton);
         playBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 //track.reloadStaticData();
-                track.play();
+                //track.setPlaybackRate(10000);
+                // Play from few seconds before
+                writeNow = 1;
             }
         });
 
-        int count = 0;
-        // Infinite loop
-        while (count < BUFFER_SIZE_TRIAL) {
-            //
-            num = record.read(lin, count, 1024);
-            track.write(lin, count, 1024);
-            count += 1024;
+        Button stopBtn=(Button) findViewById(R.id.stopButton);
+        stopBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                //track.reloadStaticData();
+                //track.setPlaybackRate(10000);
+                // Play from few seconds before
+                writeNow = 0;
+            }
+        });
 
+
+        int count = 0;
+        int offset = count;
+        // Infinite loop
+        while (true) {
+            if (writeNowHead==1) {
+                if (count >BUFFER_SIZE_TRIAL ) {
+                    count = count % BUFFER_SIZE_TRIAL;
+                    bla = 1;
+                }
+                //
+                num = record.read(lin, count, 1024);
+                //num = record.read(lin, 0, 1024);
+                if (writeNow == 1) {
+                    offset = count - (1024*100);
+                    //track.write(lin, count - (1024*100), num);
+
+                    if (offset < 0) {
+                        if (bla == 1) {
+                            offset += BUFFER_SIZE_TRIAL;
+                        } else {
+                            offset = 0;
+                        }
+                    }
+                } else {
+                    offset = count;
+                    //track.write(lin, count, num);
+                }
+                track.write(lin, offset, num);
+                Log.d("OFFSET IS", String.valueOf(offset));
+                //track.write(lin, 0, num);
+                count += num;
+            }
         }
     }
 
