@@ -3,29 +3,29 @@ package com.example.evyk.teacherplayback;
 
 
 // /* This Demo is for playing back to you whatever is being listened right away, ECHO example
-        import android.media.AudioFormat;
-        import android.media.AudioManager;
-        import android.media.AudioRecord;
-        import android.media.AudioTrack;
-        import android.media.MediaRecorder;
-        import android.os.Bundle;
-        import android.app.Activity;
-        import android.content.Context;
-        import android.os.Environment;
-        import android.util.Log;
-        import android.view.Menu;
-        import android.view.View;
-        import android.widget.Button;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioRecord;
+import android.media.AudioTrack;
+import android.media.MediaRecorder;
+import android.os.Bundle;
+import android.app.Activity;
+import android.content.Context;
+import android.os.Environment;
+import android.util.Log;
+import android.view.Menu;
+import android.view.View;
+import android.widget.Button;
 
-        import java.io.BufferedInputStream;
-        import java.io.File;
-        import java.io.FileInputStream;
-        import java.io.FileNotFoundException;
-        import java.io.FileOutputStream;
-        import java.io.IOException;
-        import java.io.InputStream;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
-public class MainActivity extends Activity {
+public class files extends Activity {
     AudioManager am = null;
     AudioRecord record =null;
     AudioTrack player =null;
