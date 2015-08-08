@@ -217,6 +217,7 @@ public class MainActivity extends Activity {
     AudioManager am = null;
     AudioRecord record =null;
     AudioTrack track =null;
+    private int BUFFER_SIZE_TRIAL = 999999;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -241,19 +242,24 @@ public class MainActivity extends Activity {
     }
 
     private void init() {
-        int min = AudioRecord.getMinBufferSize(8000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
-        record = new AudioRecord(MediaRecorder.AudioSource.VOICE_COMMUNICATION, 8000, AudioFormat.CHANNEL_IN_MONO,
+        int min = AudioRecord.getMinBufferSize(8000, AudioFormat.CHANNEL_IN_STEREO, AudioFormat.ENCODING_PCM_16BIT);
+        record = new AudioRecord(MediaRecorder.AudioSource.VOICE_COMMUNICATION, 8000, AudioFormat.CHANNEL_IN_STEREO,
                 AudioFormat.ENCODING_PCM_16BIT, min);
 
-        int maxJitter = AudioTrack.getMinBufferSize(8000, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
+        int maxJitter = AudioTrack.getMinBufferSize(8000, AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT);
 
         // Create an audio track to play sound from audioRecord
-        track = new AudioTrack(AudioManager.MODE_IN_COMMUNICATION, 8000, AudioFormat.CHANNEL_OUT_MONO,
-                AudioFormat.ENCODING_PCM_16BIT, maxJitter, AudioTrack.MODE_STREAM);
+        //track = new AudioTrack(AudioManager.MODE_IN_COMMUNICATION, 8000, AudioFormat.CHANNEL_OUT_MONO,
+        //        AudioFormat.ENCODING_PCM_16BIT, maxJitter, AudioTrack.MODE_STREAM);
+
+        track = new AudioTrack(AudioManager.MODE_IN_COMMUNICATION, 8000, AudioFormat.CHANNEL_OUT_STEREO,
+                AudioFormat.ENCODING_PCM_16BIT, maxJitter*100, AudioTrack.MODE_STREAM);
     }
 
     private void recordAndPlay() {
-        short[] lin = new short[1024];
+        final short[] lin = new short[BUFFER_SIZE_TRIAL];
+        //short[] lin = new short[1024];
+
         int num = 0;
         // Audio Manager is used for Volume and Ringer Controls
         // Get the Audio Manager
@@ -267,15 +273,19 @@ public class MainActivity extends Activity {
         Button playBtn=(Button) findViewById(R.id.playButton);
         playBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                //track.reloadStaticData();
                 track.play();
             }
         });
 
+        int count = 0;
         // Infinite loop
-        while (true) {
+        while (count < BUFFER_SIZE_TRIAL) {
             //
-            num = record.read(lin, 0, 1024);
-            track.write(lin, 0, num);
+            num = record.read(lin, count, 1024);
+            track.write(lin, count, 1024);
+            count += 1024;
+
         }
     }
 
