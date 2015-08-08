@@ -1,4 +1,4 @@
-package com.example.piazzahack.lecturecapture;
+package com.example.evyk.teacherplayback;
 
 // Media Recorder => Save into File
 // Audio Recorder => Save into Buffer
@@ -267,7 +267,7 @@ public class MainActivity extends Activity {
         Button playBtn=(Button) findViewById(R.id.playButton);
         playBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                track.play();        
+                track.play();
             }
         });
 
