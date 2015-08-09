@@ -193,7 +193,7 @@ public class MainActivity extends Activity {
                     offset = count;
                 }
             }
-            // play clip at the current offset point
+            // play clip at the current offset point                  
             track.write(lin, offset, num);
             Log.d("OFFSET IS", String.valueOf(offset));
 
