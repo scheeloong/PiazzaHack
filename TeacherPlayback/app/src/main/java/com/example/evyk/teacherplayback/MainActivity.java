@@ -78,18 +78,16 @@ public class MainActivity extends Activity {
         // Set the Audio Mode
         am.setMode(AudioManager.MODE_IN_COMMUNICATION);
 
+        final TextView t=(TextView)findViewById(R.id.secondsBack);
+        final TextView t2=(TextView)findViewById(R.id.speedGrade);
 
         Button liveBtn=(Button) findViewById(R.id.liveButton);
         liveBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 seconds_prev = 0;
                 speed = 1;
-                /*
-                TextView t=(TextView)findViewById(R.id.secondsBack);
                 t.setText("0 sec");
-                TextView t2=(TextView)findViewById(R.id.speedGrade);
                 t2.setText("1x");
-                */
                 time_changed = false;
             }
         });
@@ -100,12 +98,11 @@ public class MainActivity extends Activity {
             public void onClick(View v) {
                 seconds_prev++;
                 time_changed = true;
-                /*TextView t = (TextView) findViewById(R.id.secondsBack);
                 if (seconds_prev != 0) {
                     t.setText("-" + String.valueOf(seconds_prev) + " sec");
                 } else {
                     t.setText(String.valueOf(seconds_prev) + " sec");
-                }*/
+                }
             }
         });
 
@@ -116,13 +113,11 @@ public class MainActivity extends Activity {
                     seconds_prev--;
                     time_changed = true;
                 }
-                /*
-                TextView t=(TextView)findViewById(R.id.secondsBack);
                 if(seconds_prev != 0) {
                     t.setText("-" + String.valueOf(seconds_prev) + " sec");
                 } else {
                     t.setText(String.valueOf(seconds_prev) + " sec");
-                }*/
+                }
             }
         });
 
@@ -131,9 +126,8 @@ public class MainActivity extends Activity {
             public void onClick(View v) {
                 if (speed > 1) {
                     speed -= 0.25;
-                }/*
-                TextView t=(TextView)findViewById(R.id.speedGrade);
-                t.setText(String.valueOf(speed) + " x");*/
+                }
+                t2.setText(String.valueOf(speed) + " x");
             }
         });
 
@@ -143,9 +137,8 @@ public class MainActivity extends Activity {
             public void onClick(View v) {
                 if (speed < 2) {
                     speed += 0.25;
-                }/*
-                TextView t=(TextView)findViewById(R.id.speedGrade);
-                t.setText(String.valueOf(speed) + " x");*/
+                }
+                t2.setText(String.valueOf(speed) + " x");
             }
         });
 
@@ -168,14 +161,7 @@ public class MainActivity extends Activity {
 
             // play normally
             if (seconds_prev == 0) {
-                seconds_prev = 0;
                 speed = 1;
-                /*
-                TextView t=(TextView)findViewById(R.id.secondsBack);
-                t.setText("0 sec");
-                TextView t2=(TextView)findViewById(R.id.speedGrade);
-                t2.setText("1x");
-                */
                 time_changed = false;
                 offset = count;
             } else {
@@ -202,12 +188,7 @@ public class MainActivity extends Activity {
                 if (offset >= count) {
                     seconds_prev = 0;
                     speed = 1;
-                    /*
-                    TextView t=(TextView)findViewById(R.id.secondsBack);
-                    t.setText("0 sec");
-                    TextView t2=(TextView)findViewById(R.id.speedGrade);
-                    t2.setText("1x");
-                    */
+                    //liveBtn.performClick();
                     time_changed = false;
                     offset = count;
                 }
