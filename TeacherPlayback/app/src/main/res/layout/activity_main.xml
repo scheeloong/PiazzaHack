@@ -41,8 +41,8 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="x"
-        android:id="@+id/halfSpeed"
+        android:text="-"
+        android:id="@+id/lessSpeed"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/prevButton"
         android:layout_marginTop="130dp" />
@@ -50,9 +50,9 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="/"
-        android:id="@+id/doubleSpeed"
-        android:layout_toRightOf="@+id/halfSpeed"
+        android:text="+"
+        android:id="@+id/moreSpeed"
+        android:layout_toRightOf="@+id/lessSpeed"
         android:layout_below="@+id/forwButton"
         android:layout_marginTop="130dp" />
 

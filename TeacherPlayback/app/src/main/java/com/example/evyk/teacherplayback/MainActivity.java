@@ -20,16 +20,63 @@ public class MainActivity extends Activity {
     AudioTrack track = null;
     private int BUFFER_SIZE_TRIAL = 9999999;
 
-    private boolean faster, moved_back, looped;
+    private boolean moved_back, looped;
+    int seconds_prev;
+    float speed; // ratio *
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setVolumeControlStream(AudioManager.MODE_IN_COMMUNICATION);
-        faster = false;
         moved_back = false;
         looped = false;
+        seconds_prev = 0;
+        speed = 1;
         init();
+
+
+        Button liveBtn=(Button) findViewById(R.id.liveButton);
+        liveBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                seconds_prev = 0;
+            }
+        });
+
+        // Start playing using the Audio Track
+        Button prevBtn=(Button) findViewById(R.id.prevButton);
+        prevBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Play from few seconds before
+                seconds_prev = 5; // this is gonna be changed
+            }
+        });
+
+        Button forwBtn=(Button) findViewById(R.id.forwButton);
+        forwBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Play from few seconds before
+                seconds_prev = 5;
+            }
+        });
+
+        Button halfBtn=(Button) findViewById(R.id.lessSpeed);
+        halfBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (speed > 0.75) {
+                    speed -= 0.25;
+                }
+            }
+        });
+
+
+        Button doubleBtn=(Button) findViewById(R.id.moreSpeed);
+        doubleBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (speed < 2) {
+                    speed += 0.25;
+                }
+            }
+        });
 
         // Start a new thread to run recordAndPlay() function
         (new Thread() {
@@ -57,8 +104,6 @@ public class MainActivity extends Activity {
                 AudioFormat.ENCODING_PCM_16BIT, maxJitter, AudioTrack.MODE_STREAM);
     }
 
-    private int count = 0;
-
     private void recordAndPlay() {
         // Audio Manager is used for Volume and Ringer Controls
         // Get the Audio Manager
@@ -69,59 +114,6 @@ public class MainActivity extends Activity {
         // Start recording using the Audio Recorder
         record.startRecording();
         track.play();
-
-
-        Button liveBtn=(Button) findViewById(R.id.liveButton);
-        liveBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                //track.reloadStaticData();
-                //track.setPlaybackRate(10000);
-                // Play from few seconds before
-                faster = false;
-            }
-        });
-
-        // Start playing using the Audio Track
-        Button prevBtn=(Button) findViewById(R.id.prevButton);
-        prevBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                //track.reloadStaticData();
-                //track.setPlaybackRate(10000);
-                // Play from few seconds before
-                faster = true;
-            }
-        });
-
-        Button forwBtn=(Button) findViewById(R.id.forwButton);
-        forwBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                //track.reloadStaticData();
-                //track.setPlaybackRate(10000);
-                // Play from few seconds before
-                faster = true;
-            }
-        });
-
-        Button halfBtn=(Button) findViewById(R.id.halfSpeed);
-        halfBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                //track.reloadStaticData();
-                //track.setPlaybackRate(10000);
-                // Half speed
-                faster = true; // temp
-            }
-        });
-
-
-        Button doubleBtn=(Button) findViewById(R.id.doubleSpeed);
-        doubleBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                //track.reloadStaticData();
-                //track.setPlaybackRate(10000);
-                // X2 speed
-                faster = true; // temp
-            }
-        });
 
         final short[] lin = new short[BUFFER_SIZE_TRIAL];
         int num;
@@ -135,33 +127,47 @@ public class MainActivity extends Activity {
             }
             //
             num = record.read(lin, count, 1024);
-            if (faster) {
+
+            // play normally
+            if (speed == 1 && seconds_prev == 0) {
+                offset = count;
+            }
+            else {
+                // if we're moving faster, update offset differently
+                if (speed != 1) {
+                    offset += speed*num;
+                    offset = offset % BUFFER_SIZE_TRIAL;
+                }
+
+                // handle moving back
                 if (!moved_back) {
                     offset = count - (1024 * 400);
                     moved_back = true;
-                } else {
-                    offset += 1.4 * num;
-                    offset = offset % BUFFER_SIZE_TRIAL;
-                    if (offset >= count) {
-                        faster = false;
-                        moved_back = false;
-                        offset = count;
+
+                    // this might make offset negative
+                    if (offset < 0) {
+                        if (looped) {
+                            offset += BUFFER_SIZE_TRIAL;
+                        } else {
+                            offset = 0;
+                        }
                     }
                 }
 
-
-                if (offset < 0) {
-                    if (looped) {
-                        offset += BUFFER_SIZE_TRIAL;
-                    } else {
-                        offset = 0;
-                    }
+                // make sure offset is behind count
+                if (offset >= count) {
+                    speed = 1;
+                    seconds_prev = 0;
+                    // update UI?
+                    moved_back = false;
+                    offset = count;
                 }
-            } else {
-                offset = count;
             }
+            // play clip at the current offset point
             track.write(lin, offset, num);
             Log.d("OFFSET IS", String.valueOf(offset));
+
+            // increment count the amount we just read
             count += num;
         }
     }
