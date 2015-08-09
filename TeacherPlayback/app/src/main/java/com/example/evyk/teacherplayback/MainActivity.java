@@ -1,6 +1,5 @@
 package com.example.evyk.teacherplayback;
 
-
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
@@ -13,6 +12,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class MainActivity extends Activity {
     AudioManager am = null;
@@ -78,6 +78,10 @@ public class MainActivity extends Activity {
                 //track.setPlaybackRate(10000);
                 // Play from few seconds before
                 faster = false;
+                TextView t=(TextView)findViewById(R.id.secondsBack);
+                t.setText("0 sec");
+                TextView t2=(TextView)findViewById(R.id.speedGrade);
+                t2.setText("1x");
             }
         });
 
@@ -89,6 +93,9 @@ public class MainActivity extends Activity {
                 //track.setPlaybackRate(10000);
                 // Play from few seconds before
                 faster = true;
+                TextView t=(TextView)findViewById(R.id.secondsBack);
+                t.setText("1 sec");
+
             }
         });
 
@@ -99,27 +106,34 @@ public class MainActivity extends Activity {
                 //track.setPlaybackRate(10000);
                 // Play from few seconds before
                 faster = true;
+                TextView t=(TextView)findViewById(R.id.secondsBack);
+                t.setText("0 sec");
             }
         });
 
-        Button halfBtn=(Button) findViewById(R.id.halfSpeed);
+        Button halfBtn=(Button) findViewById(R.id.lessSpeed);
         halfBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 //track.reloadStaticData();
                 //track.setPlaybackRate(10000);
                 // Half speed
                 faster = true; // temp
+                TextView t=(TextView)findViewById(R.id.speedGrade);
+                t.setText("1x");
+
             }
         });
 
 
-        Button doubleBtn=(Button) findViewById(R.id.doubleSpeed);
+        Button doubleBtn=(Button) findViewById(R.id.moreSpeed);
         doubleBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 //track.reloadStaticData();
                 //track.setPlaybackRate(10000);
                 // X2 speed
                 faster = true; // temp
+                TextView t=(TextView)findViewById(R.id.speedGrade);
+                t.setText("2x");
             }
         });
 
@@ -148,7 +162,6 @@ public class MainActivity extends Activity {
                         offset = count;
                     }
                 }
-
 
                 if (offset < 0) {
                     if (looped) {
