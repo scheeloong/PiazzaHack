@@ -1,6 +1,5 @@
 package com.example.evyk.teacherplayback;
 
-
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
@@ -13,6 +12,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class MainActivity extends Activity {
     AudioManager am = null;
@@ -20,7 +20,7 @@ public class MainActivity extends Activity {
     AudioTrack track = null;
     private int BUFFER_SIZE_TRIAL = 9999999;
 
-    private boolean moved_back, looped;
+    private boolean time_changed, looped;
     int seconds_prev;
     float speed; // ratio *
     @Override
@@ -28,55 +28,11 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setVolumeControlStream(AudioManager.MODE_IN_COMMUNICATION);
-        moved_back = false;
         looped = false;
+        time_changed = false;
         seconds_prev = 0;
         speed = 1;
         init();
-
-
-        Button liveBtn=(Button) findViewById(R.id.liveButton);
-        liveBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                seconds_prev = 0;
-            }
-        });
-
-        // Start playing using the Audio Track
-        Button prevBtn=(Button) findViewById(R.id.prevButton);
-        prevBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                // Play from few seconds before
-                seconds_prev = 5; // this is gonna be changed
-            }
-        });
-
-        Button forwBtn=(Button) findViewById(R.id.forwButton);
-        forwBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                // Play from few seconds before
-                seconds_prev = 5;
-            }
-        });
-
-        Button halfBtn=(Button) findViewById(R.id.lessSpeed);
-        halfBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (speed > 0.75) {
-                    speed -= 0.25;
-                }
-            }
-        });
-
-
-        Button doubleBtn=(Button) findViewById(R.id.moreSpeed);
-        doubleBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (speed < 2) {
-                    speed += 0.25;
-                }
-            }
-        });
 
         // Start a new thread to run recordAndPlay() function
         (new Thread() {
@@ -104,12 +60,94 @@ public class MainActivity extends Activity {
                 AudioFormat.ENCODING_PCM_16BIT, maxJitter, AudioTrack.MODE_STREAM);
     }
 
+    /*
+    public void reset() {
+        seconds_prev = 0;
+        speed = 1;
+        TextView t=(TextView)findViewById(R.id.secondsBack);
+        t.setText("0 sec");
+        TextView t2=(TextView)findViewById(R.id.speedGrade);
+        t2.setText("1x");
+        time_changed = false;
+    }*/
+
     private void recordAndPlay() {
         // Audio Manager is used for Volume and Ringer Controls
         // Get the Audio Manager
         am = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
         // Set the Audio Mode
         am.setMode(AudioManager.MODE_IN_COMMUNICATION);
+
+
+        Button liveBtn=(Button) findViewById(R.id.liveButton);
+        liveBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                seconds_prev = 0;
+                speed = 1;
+                /*
+                TextView t=(TextView)findViewById(R.id.secondsBack);
+                t.setText("0 sec");
+                TextView t2=(TextView)findViewById(R.id.speedGrade);
+                t2.setText("1x");
+                */
+                time_changed = false;
+            }
+        });
+
+        // Start playing using the Audio Track
+        Button prevBtn=(Button) findViewById(R.id.prevButton);
+        prevBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                seconds_prev++;
+                time_changed = true;
+                /*TextView t = (TextView) findViewById(R.id.secondsBack);
+                if (seconds_prev != 0) {
+                    t.setText("-" + String.valueOf(seconds_prev) + " sec");
+                } else {
+                    t.setText(String.valueOf(seconds_prev) + " sec");
+                }*/
+            }
+        });
+
+        Button forwBtn=(Button) findViewById(R.id.forwButton);
+        forwBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (seconds_prev > 0) {
+                    seconds_prev--;
+                    time_changed = true;
+                }
+                /*
+                TextView t=(TextView)findViewById(R.id.secondsBack);
+                if(seconds_prev != 0) {
+                    t.setText("-" + String.valueOf(seconds_prev) + " sec");
+                } else {
+                    t.setText(String.valueOf(seconds_prev) + " sec");
+                }*/
+            }
+        });
+
+        Button lessBtn=(Button) findViewById(R.id.lessSpeed);
+        lessBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (speed > 1) {
+                    speed -= 0.25;
+                }/*
+                TextView t=(TextView)findViewById(R.id.speedGrade);
+                t.setText(String.valueOf(speed) + " x");*/
+            }
+        });
+
+
+        Button moreBtn=(Button) findViewById(R.id.moreSpeed);
+        moreBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (speed < 2) {
+                    speed += 0.25;
+                }/*
+                TextView t=(TextView)findViewById(R.id.speedGrade);
+                t.setText(String.valueOf(speed) + " x");*/
+            }
+        });
 
         // Start recording using the Audio Recorder
         record.startRecording();
@@ -129,20 +167,26 @@ public class MainActivity extends Activity {
             num = record.read(lin, count, 1024);
 
             // play normally
-            if (speed == 1 && seconds_prev == 0) {
+            if (seconds_prev == 0) {
+                seconds_prev = 0;
+                speed = 1;
+                /*
+                TextView t=(TextView)findViewById(R.id.secondsBack);
+                t.setText("0 sec");
+                TextView t2=(TextView)findViewById(R.id.speedGrade);
+                t2.setText("1x");
+                */
+                time_changed = false;
                 offset = count;
-            }
-            else {
+            } else {
                 // if we're moving faster, update offset differently
-                if (speed != 1) {
-                    offset += speed*num;
-                    offset = offset % BUFFER_SIZE_TRIAL;
-                }
+                offset += speed*num;
+                offset = offset % BUFFER_SIZE_TRIAL;
 
                 // handle moving back
-                if (!moved_back) {
-                    offset = count - (1024 * 400);
-                    moved_back = true;
+                if (seconds_prev != 0 && time_changed) {
+                    time_changed = false;
+                    offset = count - (10000 * seconds_prev);
 
                     // this might make offset negative
                     if (offset < 0) {
@@ -156,10 +200,15 @@ public class MainActivity extends Activity {
 
                 // make sure offset is behind count
                 if (offset >= count) {
-                    speed = 1;
                     seconds_prev = 0;
-                    // update UI?
-                    moved_back = false;
+                    speed = 1;
+                    /*
+                    TextView t=(TextView)findViewById(R.id.secondsBack);
+                    t.setText("0 sec");
+                    TextView t2=(TextView)findViewById(R.id.speedGrade);
+                    t2.setText("1x");
+                    */
+                    time_changed = false;
                     offset = count;
                 }
             }
